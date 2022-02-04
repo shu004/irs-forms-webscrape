@@ -1,12 +1,12 @@
 from bs4 import BeautifulSoup
 import requests
 import json
+import sys
 
 BASE_URL = "https://apps.irs.gov/app/picklist/list/priorFormPublication.html"
 
-
-def get_form_results(product_number):
-    """return all forms by product_number"""
+def get_product_results(product_number):
+    """return all products by product_number"""
 
     all_results = []
 
@@ -20,10 +20,14 @@ def get_form_results(product_number):
         response = requests.get(search_param).text
         soup = BeautifulSoup(response, "html.parser")
 
-        #need to check if the response gives an error ***edge case
-
         #find all the rows with the class name
         all_rows = soup.find_all("tr",  {"class": ["even", "odd"]})
+
+        # invalid input, did not find any search result on page with user's input
+        if not all_rows:
+            return []
+
+        # valid input, start looping through row
         for row in all_rows:
                 #assigning each td of the row to a variable
                 form_number = row.find("td", class_="LeftCellSpacer").get_text(strip=True)
@@ -32,7 +36,8 @@ def get_form_results(product_number):
                 link = row.find("a")["href"]
 
                 # If product name matches the input product name
-                if form_number == product_number:
+                if form_number.lower() == product_number.lower():
+
                     #add result to all results list
                     all_results.append({
                         "form_number": form_number,
@@ -58,40 +63,46 @@ def get_form_results(product_number):
 
 
 
-def result_to_form(list_of_dict):
+def result_to_form(search_results):
     """turn result to the requested form"""
 
-    #check to see if the list of dict is empty, if so,
-    return {"form_number": list_of_dict[0]["form_number"],
-            "form_title": list_of_dict[0]["form_title"],
-            "min_year": int(list_of_dict[-1]["form_year"]),
-            "max_year": int(list_of_dict[0]["form_year"])}
+    return {"form_number": search_results[0]["form_number"],
+            "form_title": search_results[0]["form_title"],
+            "min_year": int(search_results[-1]["form_year"]),
+            "max_year": int(search_results[0]["form_year"])}
 
 
 
-def user_input():
-    # form_input = input("Please enter a form name. (If multiple, please separate by comma):\neg: Form W-2 OR Form W-2, FORM W-2 P\n")
-    # form_names = form_input.title()
-    # list_of_product_numbers = form_names.split(",")
-    #check for valid input
-    #if one fo the form doesnt work, put form does not exist?
-    list_of_product_numbers = "Form W-2, Form W-2 P, Publ 1, Publ 1 (AR)"
-    splitted = list_of_product_numbers.split(', ')
+
+def search_for_irs_forms(product_numbers):
+    """return search result to json file"""
 
     result = []
-    for product_number in splitted:
-        all_product_result = get_form_results(product_number)
-        form = result_to_form(all_product_result)
+    for product_number in product_numbers:
+        search_results = get_product_results(product_number)
+        if not search_results:
+            print(f"No search results for {product_number}, please check that it's a valid IRS form")
+            quit()
+        form = result_to_form(search_results)
         result.append(form)
 
-    final_results = json.dumps(result)
-
-    # Write JSON data to file:
-    with open("scrape_result.json", "w") as file:
-        file.write(json.dumps(json.loads(final_results), indent=4))
-        file.close()
-
-user_input()
+    return result
 
 
+
+#call user_input function when this file runs
+if __name__ == '__main__':
+
+    form_names_to_search_for = sys.argv[1:]
+
+    #if they did not put any arguements in command line
+    if not form_names_to_search_for:
+        print("Welcome to IRS Form Scraper!")
+        print('Usage: python scrape.py "<form_name>" "<form_name>" ...')
+        print()
+        print('For example: python scrape.py "Form W-2" "Form W-2 P"')
+        # Return with non-zero exit code to indicate failure
+        exit(1)
+        
+    print(json.dumps(search_for_irs_forms(form_names_to_search_for), indent=4))
 
