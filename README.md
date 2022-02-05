@@ -27,36 +27,20 @@ $ python scrape.py "form w-2" > irs_info.json
 
 ## Description:
 Write two different uitilies to search IRS tax forms on `https://apps.irs.gov/app/picklist/list/priorFormPublication.html`
-    1. Take in a list of forms and returns a formatted json.
-    2. Take in a form name and a range of year, download the PDFs in a folder of the current directory.
+1. Take in a list of forms and returns a formatted json.
+2. Take in a form name and a range of year, download the PDFs in a folder of the current directory.
 
 ## Setup:
-    
+1. Clone this repo: `https://github.com/shu004/irs-webscrape.git`
+2. Initiate and activate a virtual environment
+    * virtualenv venv
+    * source ./venv/bin/activate
+3. Install dependencies
+    * pip3 install -r requirements.txt
+
 ### Part 1: Scraping the web:
 
 
-## Table of Contents
-1. [Project Description](#project-description)
-2. [Dependencies](#dependencies)
-3. [Set-Up](#set-up)
-4. [Additional Thoughts](#additonal-thoughts)
-
-## Project Description
-This project contains two webscrapers:
-1) Scrapes the website for forms matching user's input & returns results as JSON data in a new JSON file
-2) Scrapes the website for forms matching user's input & downloads results as PDFs in a new sub-directory of desired form's name
-
-What is webscraping and when is it done?
- * Webscraping is a program written to extract the data you see when you visit the website manually.
- * Webscraping is done when an website lacks a dedicated API for pulling the data.
- * It's important to look at the terms and conditions of the website you are scraping and be ethical in your use.
-     * The website being scraped in this project has no robots.txt page.
-     * The purpose of this project was purely personal / educational.
-
-## Dependencies
-* Python 3.9.8
-* Library: BeautifulSoup
-* Library: requests
 
 ## Set-Up
 1. Clone this repo:
